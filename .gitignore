@@ -1,0 +1,10 @@
+node_modules
+dist
+sessions
+devEnv.sh
+config/*.yaml
+example/mqtt/data/*.db
+example/mqtt/log/*.log
+example/influx/data/influxd.bolt
+example/influx/data/engine/*
+example/influx/etc/influx-configs

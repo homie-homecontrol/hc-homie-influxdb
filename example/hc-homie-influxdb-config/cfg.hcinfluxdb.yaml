@@ -1,0 +1,29 @@
+---
+id: weather-logs
+persistOnValueUpdate: true
+persistSchedules:
+  - "* * * * *"
+properties:
+  # Query all weather and thermostat nodes, log all properties with a celcius, percentage and pressure unit setting
+  - device: "*"
+    node: 
+      id: 
+        operator: =
+        value: ["weather", "thermostat"]
+    property: 
+      unit:
+        operator: =
+        value: ["°C", "%", "kPa"]
+      retained: true
+
+
+---
+id: battery-logs
+persistOnValueUpdate: true
+persistSchedules:
+  - "* * * * *"
+properties:
+  # Query all battery-level properties under a maintenance node - this could also be part of the upper weather-logs config
+  - device: "*"
+    node: maintenance
+    property: battery-level

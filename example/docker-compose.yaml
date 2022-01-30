@@ -1,0 +1,61 @@
+version: '3'
+services:
+    mqtt:
+        image: eclipse-mosquitto:latest
+        restart: "always"
+        deploy:
+            resources:
+                limits:
+                    memory: 125M
+        hostname: mqtt
+        ports: 
+            - "1883:1883"
+        volumes:
+            - ./mqtt/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+            - ./mqtt/data:/mosquitto/data
+            - ./mqtt/log:/mosquitto/log
+    influxdb:
+        image:  influxdb:2.0
+        restart: "always"
+        ports: 
+            - "8086:8086"
+        deploy:
+            resources:
+                limits:
+                    memory: 125M
+        environment: 
+            DOCKER_INFLUXDB_INIT_MODE: setup
+            DOCKER_INFLUXDB_INIT_USERNAME: admin
+            DOCKER_INFLUXDB_INIT_PASSWORD: 123password
+            DOCKER_INFLUXDB_INIT_ORG: smarthome
+            DOCKER_INFLUXDB_INIT_BUCKET: homecontrol
+            TZ: "Europe/Berlin"
+        volumes:
+            - ./influx/data:/var/lib/influxdb2
+            - ./influx/etc:/etc/influxdb2
+            # - /etc/timezone:/etc/timezone:ro
+            - /usr/share/zoneinfo/Europe/Berlin:/etc/localtime:ro
+    hc-homie-influxdb:
+        image: ghcr.io/homie-homecontrol/hc-homie-influxdb:latest
+        restart: "always"
+        depends_on:
+            - mqtt
+            - influxdb
+        deploy:
+            resources:
+                limits:
+                    memory: 225M
+        environment: 
+            HCINFL_MQTT_URL: "mqtt://mqtt"
+            HCINFL_MQTT_TOPIC_ROOT: homie
+            HCINFL_CONFIG_FOLDER: ./data
+            HCINFL_INFLUXDB_URL: http://influxdb:8086
+            HCINFL_INFLUXDB_TOKEN: 'update me'
+            HCINFL_INFLUXDB_ORG: 'smarthome'
+            HCINFL_INFLUXDB_BUCKET: 'homecontrol'
+            HCINFL_LOGLEVEL: debug
+            # TZ: "Europe/Berlin"
+        volumes:
+            - ./hc-homie-influxdb-config:/service/data
+            # - /etc/timezone:/etc/timezone:ro
+            # - /usr/share/zoneinfo/Europe/Berlin:/etc/localtime:ro
